@@ -54,3 +54,5 @@ Thumbs.db
 # Scratch & test scripts
 debug_cedar.py
 test_cedar_syntax.py
+temp_sources/
+
