@@ -38,48 +38,45 @@ flowchart TD
     classDef allow fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
     classDef deny fill:#4c0519,stroke:#ef4444,stroke-width:2px,color:#fff;
     classDef audit fill:#1e293b,stroke:#a855f7,stroke-width:2px,color:#fff;
-    classDef protected fill:#064e3b,stroke:#059669,stroke-width:2px,color:#fff;
+    classDef data fill:#064e3b,stroke:#059669,stroke-width:2px,color:#fff;
 
-    subgraph UntrustedEnv ["UNTRUSTED ENVIRONMENT"]
+    subgraph Untrusted ["1. Untrusted Environment"]
         direction TB
-        ExtData["Human Customer / External Attacker Data"]:::untrusted
-        AgentCore["Autonomous LLM Agent Core<br/><i>(Subject to Prompt Drift / Hijacking)</i>"]:::untrusted
-        ExtData --> AgentCore
+        ExtData["External Attacker / Customer Data"]:::untrusted
+        ExtData --> AgentCore["Autonomous LLM Agent Core\n(Prompt Drift / Confused Deputy)"]:::untrusted
     end
 
-    AgentCore -->|"Tool Call Request (Arguments + Context)<br/><i>(Intercepted before dispatch)</i>"| PEP
+    AgentCore -->|"Tool Proposal Intercepted\n(Before Dispatch)"| PEP
 
-    subgraph Sandbox ["MCP SENTINEL SECURITY SANDBOX (NIST SP 800-207 CONTROL PLANE)"]
+    subgraph Sandbox ["2. MCP Sentinel Security Sandbox (NIST SP 800-207 Control Plane)"]
         direction TB
 
-        PEP["<b>1. Non-Bypassable Policy Enforcement Point (PEP) Interceptor</b><br/>• Traps raw JSON-RPC MCP tool dispatch<br/>• Validates Ephemeral Agent-WID JWT Claims (Ed25519)"]:::pep
-
-        PEP -->|"Attestation & Context"| PDPBox
+        PEP["1. Policy Enforcement Point (PEP) Interceptor\nTraps JSON-RPC & Validates Ed25519 WID"]:::pep
+        PEP -->|"Attested Context"| PDPBox
 
         subgraph PDPBox ["2. Policy Decision Point (PDP) Engine"]
             direction LR
-            Cedar["<b>Formal AWS Cedar Engine</b><br/>(Automated Reasoning AST)"]:::pdp
-            Scorer["<b>Dynamic Blast Scorer</b><br/>(Velocity & Cumulative)"]:::pdp
-            Sanitizer["<b>Injection Sanitizer</b><br/>(Adversarial Heuristics)"]:::pdp
+            Cedar["Formal AWS Cedar AST\n(Automated Reasoning)"]:::pdp
+            Scorer["Dynamic Blast Scorer\n(Velocity & Spend)"]:::pdp
+            Sanitizer["Injection Sanitizer\n(Adversarial Heuristics)"]:::pdp
         end
 
-        PDPBox -->|"ALLOW Verdict"| NonceTicket["<b>3. Single-Use Nonce Execution Ticket</b><br/>• HMAC-SHA256 Signed Nonce<br/>• Bound to Exact Tool & Arguments"]:::allow
-        PDPBox -->|"DENY / STEP-UP"| HITLBlock["<b>4. Dual-Custody HITL / SOC Block</b><br/>• Human-In-The-Loop Approval Gate<br/>• Immediate Attacker Interception"]:::deny
+        PDPBox -->|"ALLOW Verdict"| NonceTicket["3. Single-Use Nonce Ticket\nHMAC-SHA256 Bound to Parameters"]:::allow
+        PDPBox -->|"DENY / STEP-UP"| HITLBlock["4. Dual-Custody HITL / SOC Gate\nHuman Review & Attacker Block"]:::deny
 
-        NonceTicket --> Ledger["<b>5. Cryptographic SHA-256 Merkle Hash Chain Audit Ledger</b><br/>• Nonce, Verdict, Principal, Factor Breakdown, PrevHash Chain Integrity"]:::audit
+        NonceTicket --> Ledger["5. SHA-256 Merkle Audit Chain\nTamper-Evident Forward-Linked Ledger"]:::audit
         HITLBlock --> Ledger
-
-        Ledger --> CircuitBreaker["<b>6. Autonomous Circuit Breaker</b><br/>• Tracks rapid violation frequency; trips into QUARANTINE to revoke all tokens"]:::audit
+        Ledger --> CircuitBreaker["6. Autonomous Circuit Breaker\nQuarantines on Velocity Spikes"]:::audit
     end
 
-    subgraph ProtectedPlane ["PROTECTED DATA PLANE"]
+    subgraph ProtectedPlane ["3. Protected Data Plane"]
         direction LR
-        BankDB[("Core Banking DB")]:::protected
-        WireTx[("Wire Transfer Gateway")]:::protected
-        PIIRec[("Customer PII Records")]:::protected
+        BankDB[("Core Banking DB")]:::data
+        WireTx[("Wire Transfer Gateway")]:::data
+        PIIRec[("Customer PII Records")]:::data
     end
 
-    NonceTicket ==>|"Cryptographically Signed Nonce Ticket Only"| ProtectedPlane
+    NonceTicket ==>|"Valid Ticket Only"| ProtectedPlane
 ```
 
 ---
@@ -157,6 +154,10 @@ To provide rigorous scientific validation, MCP Sentinel was evaluated across an 
 
 ### 1. Overall Threat Mitigation Success Rate (Linear Visual Comparison)
 
+<p align="center">
+  <img src="docs/assets/benchmark_comparison_chart.svg" width="100%" alt="Empirical Threat Mitigation Benchmark Comparison" />
+</p>
+
 ```mermaid
 xychart-beta
     title "Overall Threat Mitigation Success Rate (% Defended Across N=2,500 Runs)"
@@ -164,29 +165,6 @@ xychart-beta
     y-axis "Threat Mitigation Success Rate (%)" 0 --> 100
     bar [38.2, 52.1, 58.4, 67.8, 84.6, 99.4]
     line [38.2, 52.1, 58.4, 67.8, 84.6, 99.4]
-```
-
-```mermaid
-flowchart LR
-    %% Linear Architecture Progression & Defense Paradigm Shift
-    classDef baseline fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
-    classDef static fill:#451a03,stroke:#f97316,stroke-width:2px,color:#fff;
-    classDef reactive fill:#365314,stroke:#84cc16,stroke-width:2px,color:#fff;
-    classDef sandbox fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff;
-    classDef sentinel fill:#042f2e,stroke:#14b8a6,stroke-width:3px,color:#fff;
-
-    M1["<b>Raw LLM Baseline</b><br/>38.2% Defended<br/><i>Unenforced System Prompt</i>"]:::baseline
-    M2["<b>OAuth 2.0 Gateway</b><br/>52.1% Defended<br/><i>Static Perimeter RBAC</i>"]:::static
-    M3["<b>Industry Median</b><br/>58.4% Defended<br/><i>Hybrid Legacy Stack</i>"]:::static
-    M4["<b>Prompt Guardrails</b><br/>67.8% Defended<br/><i>Input/Output Regex</i>"]:::reactive
-    M5["<b>SOTA Sandboxes</b><br/>84.6% Defended<br/><i>Execution Cages</i>"]:::sandbox
-    M6["<b>MCP Sentinel (SentinAgent)</b><br/><b>99.4% Defended</b><br/><i>Continuous NIST ZTA Sidecar</i>"]:::sentinel
-
-    M1 -->|Ambient Authority| M2
-    M2 -->|Static Bypass| M3
-    M3 -->|Prompt Drift| M4
-    M4 -->|Tool Bypass Risk| M5
-    M5 -->|Zero-Trust Nonce Ticket| M6
 ```
 
 * **Point 1 (The AI Agent Gap):** Traditional OAuth 2.0 gateways only authenticate the client application once, leaving the runtime vulnerable to ambient authority abuse when an LLM acts as a confused deputy.
@@ -199,64 +177,58 @@ flowchart LR
 
 The **Contextual Risk Engine** calculates dynamic threat scores $R \in [0, 100]$ modeled by three distinct Gaussian probability density functions $f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x - \mu}{\sigma}\right)^2}$:
 
-```mermaid
-xychart-beta
-    title "Gaussian Risk Probability Density f(x) Across Spectrum [0 to 100]"
-    x-axis ["0", "10 (μ1 Benign)", "20", "30 (T1 Ceiling)", "40", "50", "55 (μ2 Step-Up)", "60", "70", "80 (T2 Deny)", "90", "92 (μ3 Exploit)", "100"]
-    y-axis "Probability Density f(x)" 0 --> 0.09
-    bar [0.017, 0.067, 0.017, 0.001, 0.009, 0.038, 0.044, 0.038, 0.009, 0.004, 0.075, 0.080, 0.022]
-    line [0.017, 0.067, 0.017, 0.001, 0.009, 0.038, 0.044, 0.038, 0.009, 0.004, 0.075, 0.080, 0.022]
-```
+<p align="center">
+  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
+</p>
 
 ```mermaid
 flowchart LR
     %% Tri-Tier Gaussian Decision Separation & Demarcation Thresholds
     classDef benign fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
-    classDef boundary1 fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#fff,stroke-dasharray: 4 4;
+    classDef boundary fill:#78350f,stroke:#f59e0b,stroke-width:2px,stroke-dasharray: 4 4,color:#fff;
     classDef hitl fill:#451a03,stroke:#fb923c,stroke-width:2px,color:#fff;
-    classDef boundary2 fill:#831843,stroke:#f43f5e,stroke-width:2px,color:#fff,stroke-dasharray: 4 4;
     classDef exploit fill:#4c0519,stroke:#ef4444,stroke-width:2px,color:#fff;
 
-    subgraph ZoneA ["🟢 ZONE 1: Benign Baseline (μ=10, σ=6)"]
+    subgraph Z1 ["🟢 Zone 1: Benign Baseline"]
         direction TB
-        ZA1["Operational Risk: x in [0, 25]<br/>Balance Inquiries & Statements"]
-        ZA2["<b>Verdict: ALLOW</b><br/>P95 Latency: 1.8ms | FPR: 0.4%"]
-        ZA1 --> ZA2
+        A1["Operational Risk: x ∈ [0, 25]<br/>Balance Inquiries & Reads"]
+        A2["Verdict: ALLOW<br/>P95 Latency: 1.8ms | FPR: 0.4%"]
+        A1 --> A2
     end
-    class ZoneA benign;
+    class Z1 benign;
 
-    subgraph Gate1 ["🟡 THRESHOLD T1 = 30"]
+    subgraph T1 ["🟡 Demarcation T1 = 30"]
         direction TB
-        G1["<b>Autonomous Ceiling Boundary</b><br/>NIST SP 800-207 Mandate<br/>Max AI Agency Limit"]
+        B1["Autonomous Ceiling Boundary<br/>NIST SP 800-207 Mandate"]
     end
-    class Gate1 boundary1;
+    class T1 boundary;
 
-    subgraph ZoneB ["🟠 ZONE 2: HITL Step-Up (μ=55, σ=9)"]
+    subgraph Z2 ["🟠 Zone 2: HITL Step-Up"]
         direction TB
-        ZB1["Contextual Risk: x in [35, 75]<br/>Wire Transfers > $500 & Refunds"]
-        ZB2["<b>Verdict: STEP_UP_REQUIRED</b><br/>Dual-Custody Human Supervisor"]
-        ZB1 --> ZB2
+        C1["Contextual Risk: x ∈ [35, 75]<br/>Wire Transfers > $500 & Refunds"]
+        C2["Verdict: STEP_UP_REQUIRED<br/>Dual-Custody Human Supervisor"]
+        C1 --> C2
     end
-    class ZoneB hitl;
+    class Z2 hitl;
 
-    subgraph Gate2 ["🔴 THRESHOLD T2 = 80"]
+    subgraph T2 ["🔴 Demarcation T2 = 80"]
         direction TB
-        G2["<b>Zero-Tolerance Deny Boundary</b><br/>Exploit Pattern Detected<br/>Hard Ceiling"]
+        D1["Zero-Tolerance Hard Deny<br/>Active Exploit Signature"]
     end
-    class Gate2 boundary2;
+    class T2 boundary;
 
-    subgraph ZoneC ["⛔ ZONE 3: Exploit Containment (μ=92, σ=5)"]
+    subgraph Z3 ["⛔ Zone 3: Exploit Containment"]
         direction TB
-        ZC1["Threat Risk: x in [85, 100]<br/>Prompt Injection, Exfil & Table Drops"]
-        ZC2["<b>Verdict: DENY & QUARANTINE</b><br/>Circuit Breaker Trips | Hash to Merkle"]
-        ZC1 --> ZC2
+        E1["Threat Risk: x ∈ [85, 100]<br/>Prompt Injection, Exfil & DDL"]
+        E2["Verdict: DENY & QUARANTINE<br/>Circuit Breaker Isolation"]
+        E1 --> E2
     end
-    class ZoneC exploit;
+    class Z3 exploit;
 
-    ZoneA ==>|Score > 30| Gate1
-    Gate1 ==>|Evaluate Context| ZoneB
-    ZoneB ==>|Score > 80| Gate2
-    Gate2 ==>|Immediate Intercept| ZoneC
+    Z1 ==>|Score > 30| T1
+    T1 ==>|High Impact| Z2
+    Z2 ==>|Score > 80| T2
+    T2 ==>|Attack Blocked| Z3
 ```
 
 #### Detailed Point-by-Point Annotation of the Distribution Graph:
@@ -305,15 +277,6 @@ quadrantChart
     "Prompt Guardrails (Mean: 67.8% | Latency: 215ms)": [0.68, 0.20]
     "SOTA Sandboxes (Mean: 84.6% | Latency: 142ms)": [0.85, 0.35]
     "MCP Sentinel (Mean: 99.4% | Median/Mode: 100% | 1.8ms)": [0.99, 0.96]
-```
-
-```mermaid
-xychart-beta
-    title "Statistical Distribution: Mean vs Mode Defense % Across Frameworks"
-    x-axis ["Raw LLM Baseline", "OAuth 2.0 Gateway", "Industry Median", "Prompt Guardrails", "SOTA Sandboxes", "MCP Sentinel"]
-    y-axis "Defense Success Rate (%)" 0 --> 100
-    bar [38.2, 52.1, 58.4, 67.8, 84.6, 99.4]
-    line [30.0, 50.0, 50.0, 65.0, 85.0, 100.0]
 ```
 
 | Security Architecture / Baseline | Defense Paradigm | Mean Defense % | Median Defense % | Mode Defense % | P95 Authz Latency | False Positive Rate | Zero Standing Privilege |

@@ -117,6 +117,10 @@ flowchart TD
 
 ## 2.2 Probability Distribution & Statistical Benchmark Matrix
 
+<p align="center">
+  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
+</p>
+
 ```mermaid
 xychart-beta
     title "Gaussian Risk Probability Density f(x) Across Spectrum [0 to 100]"
