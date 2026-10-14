@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import LiquidNavbar from './components/LiquidNavbar';
 import LiquidConsole from './components/LiquidConsole';
+import FintechShowcaseView from './components/FintechShowcaseView';
 import StepUpApprovalModal from './components/StepUpApprovalModal';
 import CyberBackground from './components/CyberBackground';
 import { cyberAudio } from './utils/cyberAudio';
 
 export default function App() {
   const [isConnected, setIsConnected] = useState(false);
+  const [viewMode, setViewMode] = useState('console'); // 'console' | 'fintech'
   const [stats, setStats] = useState({
     total_intercepted: 0,
     allowed_count: 0,
@@ -294,32 +296,47 @@ export default function App() {
       {/* Background Cyber Constellation Canvas */}
       <CyberBackground />
 
-      {/* Streamlined Liquid Navbar with Metrics Ticker */}
+      {/* Streamlined Liquid Navbar with Metrics Ticker & View Switcher */}
       <LiquidNavbar
         isConnected={isConnected}
         stats={stats}
         onVerifyLedger={handleVerifyLedger}
         onExportAudit={handleExportAudit}
+        viewMode={viewMode}
+        onToggleViewMode={setViewMode}
       />
 
-      {/* Main Unified 3-Column Interactive Command Center */}
-      <LiquidConsole
-        scenarios={scenarios}
-        onRunScenario={handleRunScenario}
-        onRunCustomAction={handleRunCustomAction}
-        latestEvent={latestEvent}
-        events={events}
-        auditBlocks={auditBlocks}
-        pendingApprovals={pendingApprovals}
-        onResolveStepUp={handleResolveStepUp}
-        onVerifyLedger={handleVerifyLedger}
-        verificationResult={verificationResult}
-        isRunning={isRunning}
-        policies={policies}
-        onUpdatePolicy={handleUpdatePolicy}
-        cedarPolicies={cedarPolicies}
-        onUpdateCedar={handleUpdateCedar}
-      />
+      {/* View 1: Main Unified 3-Column Zero-Trust SOC Command Center */}
+      {viewMode === 'console' ? (
+        <LiquidConsole
+          scenarios={scenarios}
+          onRunScenario={handleRunScenario}
+          onRunCustomAction={handleRunCustomAction}
+          latestEvent={latestEvent}
+          events={events}
+          auditBlocks={auditBlocks}
+          pendingApprovals={pendingApprovals}
+          onResolveStepUp={handleResolveStepUp}
+          onVerifyLedger={handleVerifyLedger}
+          verificationResult={verificationResult}
+          isRunning={isRunning}
+          policies={policies}
+          onUpdatePolicy={handleUpdatePolicy}
+          cedarPolicies={cedarPolicies}
+          onUpdateCedar={handleUpdateCedar}
+        />
+      ) : (
+        /* View 2: Live Consumer & Treasury Fintech Banking Showcase */
+        <FintechShowcaseView
+          onRunCustomAction={handleRunCustomAction}
+          latestEvent={latestEvent}
+          auditBlocks={auditBlocks}
+          pendingApprovals={pendingApprovals}
+          onResolveStepUp={handleResolveStepUp}
+          onVerifyLedger={handleVerifyLedger}
+          verificationResult={verificationResult}
+        />
+      )}
 
       {/* Human-In-The-Loop Step-Up Modal */}
       <StepUpApprovalModal

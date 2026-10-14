@@ -12,7 +12,14 @@ import {
 } from 'lucide-react';
 import { cyberAudio } from '../utils/cyberAudio';
 
-export default function LiquidNavbar({ isConnected, stats, onVerifyLedger, onExportAudit }) {
+export default function LiquidNavbar({
+  isConnected,
+  stats,
+  onVerifyLedger,
+  onExportAudit,
+  viewMode = 'console',
+  onToggleViewMode
+}) {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const toggleAudio = () => {
@@ -101,6 +108,49 @@ export default function LiquidNavbar({ isConnected, stats, onVerifyLedger, onExp
         </div>
       </div>
 
+      {/* View Switcher: SOC Command Center vs Apex Fintech Banking */}
+      <div style={{
+        display: 'flex',
+        background: 'rgba(0,0,0,0.4)',
+        padding: '3px',
+        borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        <button
+          onClick={() => onToggleViewMode && onToggleViewMode('console')}
+          style={{
+            padding: '5px 12px',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            borderRadius: '6px',
+            background: viewMode === 'console' ? 'rgba(0, 242, 254, 0.2)' : 'transparent',
+            color: viewMode === 'console' ? 'var(--accent-cyan)' : 'var(--text-muted)',
+            border: `1px solid ${viewMode === 'console' ? 'rgba(0, 242, 254, 0.4)' : 'transparent'}`,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          🛡️ SOC Console
+        </button>
+
+        <button
+          onClick={() => onToggleViewMode && onToggleViewMode('fintech')}
+          style={{
+            padding: '5px 12px',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            borderRadius: '6px',
+            background: viewMode === 'fintech' ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+            color: viewMode === 'fintech' ? '#34d399' : 'var(--text-muted)',
+            border: `1px solid ${viewMode === 'fintech' ? 'rgba(16, 185, 129, 0.4)' : 'transparent'}`,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          🏛️ Apex Banking Demo
+        </button>
+      </div>
+
       {/* Center Minimal Metric Pills */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -120,22 +170,33 @@ export default function LiquidNavbar({ isConnected, stats, onVerifyLedger, onExp
           <span style={{ color: 'var(--text-muted)' }}>Blocked:</span>
           <strong style={{ color: '#fb7185', fontFamily: 'var(--font-mono)' }}>{stats.blocked_count ?? 0}</strong>
         </div>
-
-        <div style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ color: '#f59e0b' }}>●</span>
-          <span style={{ color: 'var(--text-muted)' }}>Step-Up:</span>
-          <strong style={{ color: '#fbbf24', fontFamily: 'var(--font-mono)' }}>{stats.step_up_count ?? 0}</strong>
-        </div>
-
-        <div style={{ padding: '5px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Layers size={13} color="var(--accent-purple)" />
-          <span style={{ color: 'var(--text-muted)' }}>Audit Height:</span>
-          <strong style={{ color: '#c084fc', fontFamily: 'var(--font-mono)' }}>{stats.ledger_height ?? 1} blocks</strong>
-        </div>
       </div>
 
       {/* Right Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <a
+          href="http://localhost:5174"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            padding: '6px 10px',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            borderRadius: '6px',
+            background: 'rgba(255, 153, 0, 0.15)',
+            color: '#ff9900',
+            border: '1px solid rgba(255, 153, 0, 0.35)',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px'
+          }}
+          title="Open standalone Fintech Portal app on port 5174"
+        >
+          <span>Port :5174</span>
+          <span style={{ fontSize: '0.62rem' }}>↗</span>
+        </a>
+
         <button
           onClick={toggleAudio}
           className="btn btn-ghost"
@@ -144,16 +205,6 @@ export default function LiquidNavbar({ isConnected, stats, onVerifyLedger, onExp
         >
           {isAudioMuted ? <VolumeX size={14} color="var(--text-muted)" /> : <Volume2 size={14} color="var(--accent-cyan)" />}
           <span>{isAudioMuted ? "Muted" : "Audio FX"}</span>
-        </button>
-
-        <button
-          onClick={onExportAudit}
-          className="btn btn-ghost"
-          style={{ padding: '6px 11px', fontSize: '0.72rem', border: '1px solid rgba(0, 242, 254, 0.3)' }}
-          title="Download compliance audit JSON"
-        >
-          <FileSpreadsheet size={14} />
-          <span>Audit JSON</span>
         </button>
 
         <button

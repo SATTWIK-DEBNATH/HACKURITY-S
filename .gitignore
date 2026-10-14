@@ -35,6 +35,8 @@ yarn-debug.log*
 yarn-error.log*
 frontend/dist/
 frontend/node_modules/
+fintech-portal/dist/
+fintech-portal/node_modules/
 
 # Environment Variables & Secrets
 .env
