@@ -117,21 +117,9 @@ flowchart TD
 
 ## 2.2 Probability Distribution & Statistical Benchmark Matrix
 
-```
-Probability Density (f(x))
- ^
- |          BENIGN TRAFFIC                        HITL STEP-UP                       CRITICAL ATTACKS
- |         (N(μ=10, σ=6))                       (N(μ=55, σ=9))                        (N(μ=92, σ=5))
- |            ######                                 #####                                 ######
- |           ########                               #######                               ########
- |          ##########                             #########                             ##########
- |         ############                           ###########                           ############
- |       ################                       ################                      ################
- |----+---------+---------+----+-------------+---------+---------+----+------------+---------+---------+----> Risk Score
- 0             10        20   30            45        55        65   80           88        92        100
-                              ^                                        ^
-                              |-- Autonomous Ceiling Threshold (T1=30)  |-- Hard Deny Boundary (T2=80)
-```
+<p align="center">
+  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
+</p>
 
 ### Statistical Metrics: Mean, Median, Mode vs Industry and SOTA
 

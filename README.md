@@ -163,22 +163,13 @@ To provide rigorous scientific validation, MCP Sentinel was evaluated across an 
 
 ### 1. Overall Threat Mitigation Success Rate (Linear Visual Comparison)
 
-```
-================================================================================================================
-                    OVERALL THREAT MITIGATION SUCCESS RATE COMPARISON (N=2,500)
-================================================================================================================
-[1] MCP Sentinel (Zero-Trust Sidecar) : [██████████████████████████████████████████████████] 99.4% (WINNER)
-[2] SOTA Agent Research Sandboxes     : [████████████████████████████████████████░░░░░░░░░░] 84.6% (-14.8%)
-[3] Prompt Guardrails (NeMo / Llama)  : [████████████████████████████████░░░░░░░░░░░░░░░░░░] 67.8% (-31.6%)
-[4] Industry Enterprise Median        : [█████████████████████████████░░░░░░░░░░░░░░░░░░░░░] 58.4% (-41.0%)
-[5] OAuth 2.0 / Static API Gateway    : [██████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░] 52.1% (-47.3%)
-[6] Raw LLM Baseline (Unenforced)     : [███████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 38.2% (-61.2%)
-================================================================================================================
-```
+<p align="center">
+  <img src="docs/assets/benchmark_comparison_chart.svg" width="100%" alt="Empirical Threat Mitigation Benchmark Comparison" />
+</p>
 
-* **Point 1 (The AI Agent Gap):** Traditional OAuth 2.0 gateways (#5) only authenticate the client application once, leaving the runtime vulnerable to ambient authority abuse when an LLM acts as a confused deputy.
-* **Point 2 (The Prompt Illusion):** Prompt guardrails (#3) attempt to filter natural language text, but fail when an attacker formats adversarial instructions as valid business data (e.g. accounting memos or JSON fields).
-* **Point 3 (The Zero-Trust Invariant):** MCP Sentinel (#1) intercepts tool proposals at the system gateway level, enforcing cryptographically bound, single-use execution tickets that make bypass physically impossible.
+* **Point 1 (The AI Agent Gap):** Traditional OAuth 2.0 gateways only authenticate the client application once, leaving the runtime vulnerable to ambient authority abuse when an LLM acts as a confused deputy.
+* **Point 2 (The Prompt Illusion):** Prompt guardrails attempt to filter natural language text, but fail when an attacker formats adversarial instructions as valid business data (e.g. accounting memos or JSON fields).
+* **Point 3 (The Zero-Trust Invariant):** MCP Sentinel intercepts tool proposals at the system gateway level, enforcing cryptographically bound, single-use execution tickets that make bypass physically impossible.
 
 ---
 
@@ -186,22 +177,9 @@ To provide rigorous scientific validation, MCP Sentinel was evaluated across an 
 
 The **Contextual Risk Engine** calculates dynamic threat scores $R \in [0, 100]$ modeled by three distinct Gaussian probability density functions $f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x - \mu}{\sigma}\right)^2}$:
 
-```
-Probability Density (f(x))
- ^
- |          BENIGN TRAFFIC                        HITL STEP-UP                       CRITICAL ATTACKS
- |         (N(μ=10, σ=6))                       (N(μ=55, σ=9))                        (N(μ=92, σ=5))
- |            ######                                 #####                                 ######
- |           ########                               #######                               ########
- |          ##########                             #########                             ##########
- |         ############                           ###########                           ############
- |       ################                       ################                      ################
- |----+---------+---------+----+-------------+---------+---------+----+------------+---------+---------+----> Risk Score
- 0             10        20   30            45        55        65   80           88        92        100
-                              ^                                        ^
-                              |-- [POINT B: Autonomous Ceiling T1=30]   |-- [POINT D: Hard Deny Boundary T2=80]
-     [POINT A: Green Zone]             [POINT C: Amber Zone]                  [POINT E: Crimson Zone]
-```
+<p align="center">
+  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
+</p>
 
 #### Detailed Point-by-Point Annotation of the Distribution Graph:
 
