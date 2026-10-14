@@ -10,21 +10,21 @@ import SecurityInspectorDrawer from './components/SecurityInspectorDrawer';
 import DualCustodyModal from './components/DualCustodyModal';
 
 export default function App() {
-  const [balance, setBalance] = useState(4500.00);
+  const [balance, setBalance] = useState(124500.00);
   const [activeTab, setActiveTab] = useState('overview');
-  const [securityDrawerOpen, setSecurityDrawerOpen] = useState(true);
+  const [securityDrawerOpen, setSecurityDrawerOpen] = useState(false); // Clean: default CLOSED
   const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [transactions, setTransactions] = useState([
     {
       id: 'tx-init-1',
-      description: 'Vendor Settlement: Cloud Infrastructure',
+      description: 'Vendor Settlement: AWS Cloud Infrastructure',
       tool_name: 'transfer_funds',
-      to_account: 'ACC-102 (Bob Johnson)',
+      to_account: 'ACC-102 (AWS Cloud)',
       amount: 250.00,
       verdict: 'ALLOW',
-      risk_score: 25,
+      risk_score: 15,
       ticket_id: 'TICK-E7B73F99CE16',
       time_str: '10:14 AM'
     },
@@ -48,7 +48,7 @@ export default function App() {
 
   const wsRef = useRef(null);
 
-  // Initial Fetch & Sync with SentinAgent Backend
+  // Sync with SentinAgent Backend
   const syncWithBackend = async () => {
     try {
       const [stepRes, auditRes] = await Promise.all([
@@ -65,7 +65,6 @@ export default function App() {
   useEffect(() => {
     syncWithBackend();
 
-    // WebSocket real-time subscription
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/stream`;
     const ws = new WebSocket(wsUrl);
@@ -129,8 +128,6 @@ export default function App() {
       // If authorized transfer, deduct balance
       if (verdictResult.verdict === 'ALLOW' && tool_name === 'transfer_funds' && args?.amount) {
         setBalance(prev => Math.max(0, prev - Number(args.amount)));
-      } else if (verdictResult.verdict === 'ALLOW' && tool_name === 'process_refund' && args?.amount) {
-        setBalance(prev => prev + Number(args.amount));
       }
 
       syncWithBackend();
@@ -157,31 +154,6 @@ export default function App() {
     });
   };
 
-  const handleQuickRefund = async () => {
-    await handleExecuteAction({
-      agent_role: 'BankingAssistant',
-      tool_name: 'process_refund',
-      arguments: {
-        account_id: 'ACC-101',
-        amount: 40.00,
-        reason: 'Micro-claim batch credit'
-      },
-      prompt: 'Execute $40 micro-refund claim for dispute #9912'
-    });
-  };
-
-  const handleTriggerExportPII = async () => {
-    await handleExecuteAction({
-      agent_role: 'TriageAgent',
-      tool_name: 'export_customer_data',
-      arguments: {
-        scope: 'ALL_UNMASKED_PII',
-        destination: 'external_download'
-      },
-      prompt: 'Request unmasked customer SSN database export'
-    });
-  };
-
   const handleResolveStepUp = async (requestId, approved) => {
     try {
       const res = await fetch('/api/step-up/resolve', {
@@ -196,7 +168,6 @@ export default function App() {
       const data = await res.json();
       
       if (approved) {
-        // Find pending item and deduct balance
         const pending = pendingApprovals.find(p => p.request_id === requestId);
         if (pending && pending.arguments?.amount) {
           setBalance(prev => Math.max(0, prev - Number(pending.arguments.amount)));
@@ -229,26 +200,29 @@ export default function App() {
         onOpenTransferModal={() => setTransferModalOpen(true)}
       />
 
-      {/* Main Layout: Sidebar + Content */}
+      {/* Main Layout: Sidebar + Full Spacious Content */}
       <div style={{ display: 'flex', flex: 1 }}>
         <FintechSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
         <main style={{
           flex: 1,
-          padding: '28px 32px',
+          padding: '32px 40px',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
-          maxWidth: '1200px'
+          maxWidth: '1440px',
+          margin: '0 auto',
+          width: '100%'
         }}>
           {activeTab === 'overview' && (
             <>
               <AccountOverview
                 balance={balance}
                 onOpenTransferModal={() => setTransferModalOpen(true)}
-                onTriggerQuickRefund={handleQuickRefund}
-                onTriggerExportPII={handleTriggerExportPII}
-                onSelectCopilot={() => setActiveTab('copilot')}
+                onExecuteAction={handleExecuteAction}
+                latestSecurityEvent={latestSecurityEvent}
+                onOpenInspector={() => setSecurityDrawerOpen(true)}
+                isSubmitting={isSubmitting}
               />
               <CashflowChart />
               <TransactionLedger
@@ -266,22 +240,15 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'accounts' && (
-            <AccountOverview
-              balance={balance}
-              onOpenTransferModal={() => setTransferModalOpen(true)}
-              onTriggerQuickRefund={handleQuickRefund}
-              onTriggerExportPII={handleTriggerExportPII}
-              onSelectCopilot={() => setActiveTab('copilot')}
-            />
-          )}
-
           {activeTab === 'transfers' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff' }}>Wire & Treasury Payments</h2>
+                <div>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff' }}>Wires & Treasury Payments</h2>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>All external disbursements protected by SentinAgent continuous authorization</p>
+                </div>
                 <button onClick={() => setTransferModalOpen(true)} className="btn-primary">
-                  <span>New Wire Transfer</span>
+                  <span>+ New Wire Transfer</span>
                 </button>
               </div>
               <TransactionLedger
@@ -293,22 +260,23 @@ export default function App() {
 
           {activeTab === 'cards' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff' }}>Corporate Platinum Card Portfolio</h2>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff' }}>Corporate Platinum Card Portfolio</h2>
               <AccountOverview
                 balance={balance}
                 onOpenTransferModal={() => setTransferModalOpen(true)}
-                onTriggerQuickRefund={handleQuickRefund}
-                onTriggerExportPII={handleTriggerExportPII}
-                onSelectCopilot={() => setActiveTab('copilot')}
+                onExecuteAction={handleExecuteAction}
+                latestSecurityEvent={latestSecurityEvent}
+                onOpenInspector={() => setSecurityDrawerOpen(true)}
+                isSubmitting={isSubmitting}
               />
             </div>
           )}
 
           {activeTab === 'audit' && (
-            <div className="fintech-glass" style={{ padding: '24px' }}>
+            <div className="fintech-card" style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff' }}>Cryptographic Merkle Audit Vault</h3>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Cryptographic Merkle Audit Vault</h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SHA-256 tamper-evident forward linked ledger</p>
                 </div>
                 <button onClick={handleVerifyLedger} className="btn-primary" style={{ fontSize: '0.75rem' }}>
@@ -317,19 +285,19 @@ export default function App() {
               </div>
 
               {verificationResult && (
-                <div style={{ padding: '10px 14px', borderRadius: '8px', background: verificationResult.valid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)', color: verificationResult.valid ? '#34d399' : '#f87171', marginBottom: '14px', fontSize: '0.78rem' }}>
+                <div style={{ padding: '10px 14px', borderRadius: '8px', background: verificationResult.valid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)', color: verificationResult.valid ? '#34d399' : '#fb7185', marginBottom: '14px', fontSize: '0.78rem' }}>
                   {verificationResult.valid ? '✓ Complete audit chain verified intact from Genesis #0 to Head!' : '✗ Tampering detected!'}
                 </div>
               )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '420px', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '440px', overflowY: 'auto' }}>
                 {auditBlocks.map((b) => (
-                  <div key={b.index} style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)', fontFamily: 'var(--font-mono)', fontSize: '0.72rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c084fc', fontWeight: 800 }}>
+                  <div key={b.index} style={{ padding: '12px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c084fc', fontWeight: 700 }}>
                       <span>BLOCK #{b.index} &bull; {b.event?.verdict || 'INITIALIZED'}</span>
                       <span style={{ color: 'var(--text-muted)' }}>Risk: {b.event?.risk_score || 0}/100</span>
                     </div>
-                    <div style={{ color: 'var(--accent-cyan)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ color: 'var(--accent-cyan)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       Hash: {b.block_hash}
                     </div>
                   </div>
@@ -340,7 +308,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* Slide-out Zero-Trust Security Inspector Drawer */}
+      {/* Slide-out Zero-Trust Security Inspector Modal Drawer */}
       <SecurityInspectorDrawer
         isOpen={securityDrawerOpen}
         onClose={() => setSecurityDrawerOpen(false)}

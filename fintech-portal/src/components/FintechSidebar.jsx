@@ -7,36 +7,41 @@ import {
   Bot,
   FileCheck2,
   Shield,
-  Settings,
-  HelpCircle
+  Lock
 } from 'lucide-react';
 
 export default function FintechSidebar({ activeTab, setActiveTab }) {
   const navItems = [
     { id: 'overview', label: 'Treasury Overview', icon: LayoutDashboard },
-    { id: 'accounts', label: 'Accounts & Vaults', icon: Wallet },
-    { id: 'transfers', label: 'Wire & Payments', icon: ArrowRightLeft },
-    { id: 'copilot', label: 'SentinCopilot AI', icon: Bot, badge: 'Protected' },
-    { id: 'cards', label: 'Corporate Platinum', icon: CreditCard },
+    { id: 'transfers', label: 'Wires & Payments', icon: ArrowRightLeft },
+    { id: 'copilot', label: 'AI Agent Copilot', icon: Bot, badge: 'ZTA' },
+    { id: 'cards', label: 'Corporate Cards', icon: CreditCard },
     { id: 'audit', label: 'Merkle Audit Log', icon: FileCheck2 }
   ];
 
   return (
     <aside style={{
-      width: '240px',
+      width: '230px',
       borderRight: '1px solid var(--border-subtle)',
-      background: 'rgba(5, 8, 20, 0.65)',
+      background: 'rgba(7, 10, 19, 0.6)',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      padding: '24px 16px'
+      padding: '24px 14px'
     }}>
       <div>
-        <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 12px 12px' }}>
-          Banking Menu
+        <div style={{
+          fontSize: '0.68rem',
+          fontWeight: 700,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          padding: '0 12px 14px'
+        }}>
+          Menu
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -50,14 +55,14 @@ export default function FintechSidebar({ activeTab, setActiveTab }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  background: isActive ? 'rgba(0, 242, 254, 0.12)' : 'transparent',
+                  padding: '9px 12px',
+                  borderRadius: '9px',
+                  background: isActive ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
                   color: isActive ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                  border: `1px solid ${isActive ? 'rgba(0, 242, 254, 0.25)' : 'transparent'}`,
+                  border: `1px solid ${isActive ? 'rgba(56, 189, 248, 0.2)' : 'transparent'}`,
                   cursor: 'pointer',
                   fontSize: '0.82rem',
-                  fontWeight: isActive ? 700 : 500,
+                  fontWeight: isActive ? 600 : 500,
                   transition: 'all 0.15s ease',
                   textAlign: 'left'
                 }}
@@ -69,13 +74,13 @@ export default function FintechSidebar({ activeTab, setActiveTab }) {
 
                 {item.badge && (
                   <span style={{
-                    fontSize: '0.6rem',
-                    fontWeight: 800,
-                    padding: '2px 6px',
+                    fontSize: '0.62rem',
+                    fontWeight: 700,
+                    padding: '1px 6px',
                     borderRadius: '4px',
-                    background: 'rgba(16, 185, 129, 0.15)',
+                    background: 'rgba(16, 185, 129, 0.12)',
                     color: '#34d399',
-                    border: '1px solid rgba(16, 185, 129, 0.3)'
+                    border: '1px solid rgba(16, 185, 129, 0.25)'
                   }}>
                     {item.badge}
                   </span>
@@ -86,19 +91,19 @@ export default function FintechSidebar({ activeTab, setActiveTab }) {
         </nav>
       </div>
 
-      {/* Security Status Footnote */}
+      {/* Security Status Box */}
       <div style={{
         padding: '14px',
         borderRadius: '12px',
-        background: 'rgba(17, 24, 54, 0.7)',
-        border: '1px solid rgba(255, 255, 255, 0.06)'
+        background: 'rgba(15, 23, 42, 0.6)',
+        border: '1px solid var(--border-subtle)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <Shield size={14} color="var(--accent-emerald)" />
-          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f8fafc' }}>Zero-Trust Enforced</span>
+          <Shield size={14} color="#10b981" />
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f8fafc' }}>Zero-Trust Engine</span>
         </div>
-        <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>
-          All AI agent tool dispatches are isolated via non-bypassable PEP proxy.
+        <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: '1.4', margin: 0 }}>
+          Strict Default-Deny. Every agent tool invocation requires single-use HMAC tickets.
         </p>
       </div>
     </aside>

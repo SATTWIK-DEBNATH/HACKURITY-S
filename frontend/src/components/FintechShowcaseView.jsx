@@ -47,10 +47,10 @@ export default function FintechShowcaseView({
   onVerifyLedger,
   verificationResult
 }) {
-  const [balance, setBalance] = useState(4500.00);
+  const [balance, setBalance] = useState(124500.00);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'transfers' | 'copilot' | 'cards' | 'audit'
   const [transferModalOpen, setTransferModalOpen] = useState(false);
-  const [securityDrawerOpen, setSecurityDrawerOpen] = useState(true);
+  const [securityDrawerOpen, setSecurityDrawerOpen] = useState(false);
   const [isFrozen, setIsFrozen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [inputPrompt, setInputPrompt] = useState('');
@@ -714,22 +714,40 @@ export default function FintechShowcaseView({
           )}
         </div>
 
-        {/* Right Slide-out SentinAgent Security Drawer */}
+        {/* Right Slide-out SentinAgent Security Drawer as Fixed Overlay */}
         {securityDrawerOpen && (
-          <div style={{
-            width: '380px',
-            borderLeft: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(5, 8, 20, 0.95)',
-            backdropFilter: 'blur(20px)',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            position: 'sticky',
-            top: '70px',
-            height: 'calc(100vh - 80px)',
-            overflowY: 'auto'
-          }}>
+          <>
+            <div
+              onClick={() => setSecurityDrawerOpen(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 90
+              }}
+            />
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '420px',
+              maxWidth: '90vw',
+              borderLeft: '1px solid rgba(255,255,255,0.1)',
+              background: '#0a0e1a',
+              backdropFilter: 'blur(24px)',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              zIndex: 100,
+              overflowY: 'auto',
+              boxShadow: '-10px 0 40px rgba(0,0,0,0.8)'
+            }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--accent-cyan)', textTransform: 'uppercase' }}>
@@ -809,7 +827,8 @@ export default function FintechShowcaseView({
               </div>
             )}
           </div>
-        )}
+        </>
+      )}
       </div>
 
       {/* Wire Transfer Modal */}
