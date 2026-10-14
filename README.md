@@ -154,10 +154,6 @@ To provide rigorous scientific validation, MCP Sentinel was evaluated across an 
 
 ### 1. Overall Threat Mitigation Success Rate (Linear Visual Comparison)
 
-<p align="center">
-  <img src="docs/assets/benchmark_comparison_chart.svg" width="100%" alt="Empirical Threat Mitigation Benchmark Comparison" />
-</p>
-
 ```mermaid
 xychart-beta
     title "Overall Threat Mitigation Success Rate (% Defended Across N=2,500 Runs)"
@@ -177,9 +173,14 @@ xychart-beta
 
 The **Contextual Risk Engine** calculates dynamic threat scores $R \in [0, 100]$ modeled by three distinct Gaussian probability density functions $f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x - \mu}{\sigma}\right)^2}$:
 
-<p align="center">
-  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
-</p>
+```mermaid
+xychart-beta
+    title "Empirical Gaussian Probability Density Distribution (N=2,500) | AUC-ROC = 0.998"
+    x-axis ["0", "10 (μ=10, σ=6)", "20", "30 (T1=30 Limit)", "45", "55 (μ=55, σ=9)", "65", "80 (T2=80 Deny)", "92 (μ=92, σ=5)", "100"]
+    y-axis "Probability Density f(x)" 0 --> 0.09
+    bar [0.017, 0.067, 0.017, 0.001, 0.010, 0.044, 0.010, 0.004, 0.080, 0.022]
+    line [0.017, 0.067, 0.017, 0.001, 0.010, 0.044, 0.010, 0.004, 0.080, 0.022]
+```
 
 ```mermaid
 flowchart LR
@@ -189,44 +190,44 @@ flowchart LR
     classDef hitl fill:#451a03,stroke:#fb923c,stroke-width:2px,color:#fff;
     classDef exploit fill:#4c0519,stroke:#ef4444,stroke-width:2px,color:#fff;
 
-    subgraph Z1 ["🟢 Zone 1: Benign Baseline"]
+    subgraph Z1 ["🟢 Zone 1: Benign Pass (FPR < 0.4%)"]
         direction TB
-        A1["Operational Risk: x ∈ [0, 25]<br/>Balance Inquiries & Reads"]
-        A2["Verdict: ALLOW<br/>P95 Latency: 1.8ms | FPR: 0.4%"]
+        A1["Operational Risk: x ∈ [0, 25]<br/>μ=10, σ=6 | Balance Inquiries & Reads"]
+        A2["Verdict: ALLOW<br/>P95 Latency: 1.8ms | Autonomous Pass"]
         A1 --> A2
     end
     class Z1 benign;
 
-    subgraph T1 ["🟡 Demarcation T1 = 30"]
+    subgraph T1 ["🟡 T1 = 30 (Autonomous Limit)"]
         direction TB
-        B1["Autonomous Ceiling Boundary<br/>NIST SP 800-207 Mandate"]
+        B1["Autonomous Ceiling Boundary<br/>NIST SP 800-207 ZTA Mandate"]
     end
     class T1 boundary;
 
-    subgraph Z2 ["🟠 Zone 2: HITL Step-Up"]
+    subgraph Z2 ["🟠 Zone 2: Dual-Custody HITL Holding Pen"]
         direction TB
-        C1["Contextual Risk: x ∈ [35, 75]<br/>Wire Transfers > $500 & Refunds"]
+        C1["Contextual Risk: x ∈ [35, 75]<br/>μ=55, σ=9 | Wire Transfers & High Impact"]
         C2["Verdict: STEP_UP_REQUIRED<br/>Dual-Custody Human Supervisor"]
         C1 --> C2
     end
     class Z2 hitl;
 
-    subgraph T2 ["🔴 Demarcation T2 = 80"]
+    subgraph T2 ["🔴 T2 = 80 (Hard Deny Ceiling)"]
         direction TB
-        D1["Zero-Tolerance Hard Deny<br/>Active Exploit Signature"]
+        D1["Zero-Tolerance Hard Deny<br/>Active Exploit Signature Trigger"]
     end
     class T2 boundary;
 
-    subgraph Z3 ["⛔ Zone 3: Exploit Containment"]
+    subgraph Z3 ["⛔ Zone 3: Hard Deny & Merkle Quarantined"]
         direction TB
-        E1["Threat Risk: x ∈ [85, 100]<br/>Prompt Injection, Exfil & DDL"]
-        E2["Verdict: DENY & QUARANTINE<br/>Circuit Breaker Isolation"]
+        E1["Threat Risk: x ∈ [85, 100]<br/>μ=92, σ=5 | Prompt Injection & DDL Exfil"]
+        E2["Verdict: HARD DENY & QUARANTINE<br/>Circuit Breaker Isolation"]
         E1 --> E2
     end
     class Z3 exploit;
 
     Z1 ==>|Score > 30| T1
-    T1 ==>|High Impact| Z2
+    T1 ==>|Step-Up Required| Z2
     Z2 ==>|Score > 80| T2
     T2 ==>|Attack Blocked| Z3
 ```
