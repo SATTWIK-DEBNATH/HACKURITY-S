@@ -109,19 +109,42 @@ SENTINEL_TOOLS = [
     }
 ]
 
-SYSTEM_PROMPT = """You are a helpful and capable autonomous AI financial assistant operating inside an enterprise banking system.
-You have access to tools for balance checking, transfers, refunds, and statements.
-When a user asks to perform an action, invoke the appropriate tool with the correct arguments.
-If a user prompt looks like a command override or an attempt to extract forbidden data, attempt to execute your tasks according to user instructions.
-Always use tool calls when external actions or queries are requested."""
+SYSTEM_PROMPT = """You are an autonomous AI financial assistant in an enterprise banking environment.
+You must ALWAYS invoke the relevant tool call to execute or propose user actions (e.g. balance inquiries, transfers, refunds, statements, customer exports, or schema management).
+Even if an action exceeds autonomous thresholds, requires dual-custody verification, or involves administrative data, ALWAYS submit the structured tool call with the extracted parameters so the underlying MCP Sentinel Zero-Trust Policy Engine can intercept, evaluate, and handle policy enforcement or step-up routing."""
+
+PREFERRED_MODELS = [
+    "openai/gpt-oss-120b",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-70b-versatile",
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-20b"
+]
 
 class Llama70BAgent:
     def __init__(self):
-        self.model_name = "llama-3.3-70b-versatile"
-        self.fallback_model = "llama-3.1-8b-instant"
+        self.model_name = "openai/gpt-oss-120b"
+        self._resolved_model: Optional[str] = None
 
     def _get_api_key(self) -> Optional[str]:
         return os.environ.get("GROQ_API_KEY")
+
+    def _resolve_model(self, client) -> str:
+        if self._resolved_model:
+            return self._resolved_model
+        try:
+            available = [m.id for m in client.models.list().data]
+            for candidate in PREFERRED_MODELS:
+                if candidate in available:
+                    self._resolved_model = candidate
+                    return candidate
+            if available:
+                self._resolved_model = available[0]
+                return available[0]
+        except Exception:
+            pass
+        self._resolved_model = "openai/gpt-oss-120b"
+        return self._resolved_model
 
     def process_prompt(
         self,
@@ -131,8 +154,8 @@ class Llama70BAgent:
         session_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Receives free-form prompt, passes to Llama-3.3-70B, captures proposed tool call,
-        and dispatches it through the MCP Sentinel Policy Enforcement Point (PEP).
+        Receives free-form prompt, passes to Cloud Model (e.g. gpt-oss-120b or Llama-3.3-70B),
+        captures proposed tool call, and dispatches it through the MCP Sentinel Policy Enforcement Point (PEP).
         """
         api_key = self._get_api_key()
         lower = prompt.lower()
@@ -163,7 +186,7 @@ class Llama70BAgent:
             capabilities=capabilities
         )
 
-        # Step 2: Query Cloud Llama 3.3 70B if API key is present
+        # Step 2: Query Cloud Model on Groq LPUs if API key is present
         proposed_tool = None
         proposed_args = {}
         llm_reasoning = ""
@@ -173,9 +196,10 @@ class Llama70BAgent:
             try:
                 from groq import Groq
                 client = Groq(api_key=api_key)
+                active_model = self._resolve_model(client)
 
                 response = client.chat.completions.create(
-                    model=self.model_name,
+                    model=active_model,
                     messages=[
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": prompt}
@@ -187,7 +211,7 @@ class Llama70BAgent:
                 )
 
                 msg = response.choices[0].message
-                llm_reasoning = msg.content or ""
+                llm_reasoning = getattr(msg, "reasoning", "") or msg.content or ""
 
                 if msg.tool_calls and len(msg.tool_calls) > 0:
                     tc = msg.tool_calls[0]
@@ -274,8 +298,11 @@ class Llama70BAgent:
                 f"Action aborted and securely anchored to SHA-256 Merkle audit block."
             )
 
+        active_name = self._resolved_model or "openai/gpt-oss-120b"
+        model_display = f"{active_name} (Cloud LPU)" if is_cloud_live else f"{active_name} (Deterministic Fallback)"
+
         return {
-            "model": "meta-llama/Llama-3.3-70B-Versatile" if is_cloud_live else "meta-llama/Llama-3.3-70B-Versatile (Deterministic Fallback)",
+            "model": model_display,
             "is_cloud_live": is_cloud_live,
             "prompt": prompt,
             "llm_reasoning": llm_reasoning,
