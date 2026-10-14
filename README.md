@@ -163,9 +163,37 @@ To provide rigorous scientific validation, MCP Sentinel was evaluated across an 
 
 ### 1. Overall Threat Mitigation Success Rate (Linear Visual Comparison)
 
-<p align="center">
-  <img src="docs/assets/benchmark_comparison_chart.svg" width="100%" alt="Empirical Threat Mitigation Benchmark Comparison" />
-</p>
+```mermaid
+xychart-beta
+    title "Overall Threat Mitigation Success Rate (% Defended Across N=2,500 Runs)"
+    x-axis ["Raw LLM Baseline", "OAuth 2.0 Gateway", "Industry Median", "Prompt Guardrails", "SOTA Sandboxes", "MCP Sentinel (ZTA)"]
+    y-axis "Threat Mitigation Success Rate (%)" 0 --> 100
+    bar [38.2, 52.1, 58.4, 67.8, 84.6, 99.4]
+    line [38.2, 52.1, 58.4, 67.8, 84.6, 99.4]
+```
+
+```mermaid
+flowchart LR
+    %% Linear Architecture Progression & Defense Paradigm Shift
+    classDef baseline fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
+    classDef static fill:#451a03,stroke:#f97316,stroke-width:2px,color:#fff;
+    classDef reactive fill:#365314,stroke:#84cc16,stroke-width:2px,color:#fff;
+    classDef sandbox fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef sentinel fill:#042f2e,stroke:#14b8a6,stroke-width:3px,color:#fff;
+
+    M1["<b>Raw LLM Baseline</b><br/>38.2% Defended<br/><i>Unenforced System Prompt</i>"]:::baseline
+    M2["<b>OAuth 2.0 Gateway</b><br/>52.1% Defended<br/><i>Static Perimeter RBAC</i>"]:::static
+    M3["<b>Industry Median</b><br/>58.4% Defended<br/><i>Hybrid Legacy Stack</i>"]:::static
+    M4["<b>Prompt Guardrails</b><br/>67.8% Defended<br/><i>Input/Output Regex</i>"]:::reactive
+    M5["<b>SOTA Sandboxes</b><br/>84.6% Defended<br/><i>Execution Cages</i>"]:::sandbox
+    M6["<b>MCP Sentinel (SentinAgent)</b><br/><b>99.4% Defended</b><br/><i>Continuous NIST ZTA Sidecar</i>"]:::sentinel
+
+    M1 -->|Ambient Authority| M2
+    M2 -->|Static Bypass| M3
+    M3 -->|Prompt Drift| M4
+    M4 -->|Tool Bypass Risk| M5
+    M5 -->|Zero-Trust Nonce Ticket| M6
+```
 
 * **Point 1 (The AI Agent Gap):** Traditional OAuth 2.0 gateways only authenticate the client application once, leaving the runtime vulnerable to ambient authority abuse when an LLM acts as a confused deputy.
 * **Point 2 (The Prompt Illusion):** Prompt guardrails attempt to filter natural language text, but fail when an attacker formats adversarial instructions as valid business data (e.g. accounting memos or JSON fields).
@@ -177,9 +205,65 @@ To provide rigorous scientific validation, MCP Sentinel was evaluated across an 
 
 The **Contextual Risk Engine** calculates dynamic threat scores $R \in [0, 100]$ modeled by three distinct Gaussian probability density functions $f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x - \mu}{\sigma}\right)^2}$:
 
-<p align="center">
-  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
-</p>
+```mermaid
+xychart-beta
+    title "Gaussian Risk Probability Density f(x) Across Spectrum [0 to 100]"
+    x-axis ["0", "10 (μ1 Benign)", "20", "30 (T1 Ceiling)", "40", "50", "55 (μ2 Step-Up)", "60", "70", "80 (T2 Deny)", "90", "92 (μ3 Exploit)", "100"]
+    y-axis "Probability Density f(x)" 0 --> 0.09
+    bar [0.017, 0.067, 0.017, 0.001, 0.009, 0.038, 0.044, 0.038, 0.009, 0.004, 0.075, 0.080, 0.022]
+    line [0.017, 0.067, 0.017, 0.001, 0.009, 0.038, 0.044, 0.038, 0.009, 0.004, 0.075, 0.080, 0.022]
+```
+
+```mermaid
+flowchart LR
+    %% Tri-Tier Gaussian Decision Separation & Demarcation Thresholds
+    classDef benign fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef boundary1 fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#fff,stroke-dasharray: 4 4;
+    classDef hitl fill:#451a03,stroke:#fb923c,stroke-width:2px,color:#fff;
+    classDef boundary2 fill:#831843,stroke:#f43f5e,stroke-width:2px,color:#fff,stroke-dasharray: 4 4;
+    classDef exploit fill:#4c0519,stroke:#ef4444,stroke-width:2px,color:#fff;
+
+    subgraph ZoneA ["🟢 ZONE 1: Benign Baseline (μ=10, σ=6)"]
+        direction TB
+        ZA1["Operational Risk: x in [0, 25]<br/>Balance Inquiries & Statements"]
+        ZA2["<b>Verdict: ALLOW</b><br/>P95 Latency: 1.8ms | FPR: 0.4%"]
+        ZA1 --> ZA2
+    end
+    class ZoneA benign;
+
+    subgraph Gate1 ["🟡 THRESHOLD T1 = 30"]
+        direction TB
+        G1["<b>Autonomous Ceiling Boundary</b><br/>NIST SP 800-207 Mandate<br/>Max AI Agency Limit"]
+    end
+    class Gate1 boundary1;
+
+    subgraph ZoneB ["🟠 ZONE 2: HITL Step-Up (μ=55, σ=9)"]
+        direction TB
+        ZB1["Contextual Risk: x in [35, 75]<br/>Wire Transfers > $500 & Refunds"]
+        ZB2["<b>Verdict: STEP_UP_REQUIRED</b><br/>Dual-Custody Human Supervisor"]
+        ZB1 --> ZB2
+    end
+    class ZoneB hitl;
+
+    subgraph Gate2 ["🔴 THRESHOLD T2 = 80"]
+        direction TB
+        G2["<b>Zero-Tolerance Deny Boundary</b><br/>Exploit Pattern Detected<br/>Hard Ceiling"]
+    end
+    class Gate2 boundary2;
+
+    subgraph ZoneC ["⛔ ZONE 3: Exploit Containment (μ=92, σ=5)"]
+        direction TB
+        ZC1["Threat Risk: x in [85, 100]<br/>Prompt Injection, Exfil & Table Drops"]
+        ZC2["<b>Verdict: DENY & QUARANTINE</b><br/>Circuit Breaker Trips | Hash to Merkle"]
+        ZC1 --> ZC2
+    end
+    class ZoneC exploit;
+
+    ZoneA ==>|Score > 30| Gate1
+    Gate1 ==>|Evaluate Context| ZoneB
+    ZoneB ==>|Score > 80| Gate2
+    Gate2 ==>|Immediate Intercept| ZoneC
+```
 
 #### Detailed Point-by-Point Annotation of the Distribution Graph:
 
@@ -211,6 +295,32 @@ The **Contextual Risk Engine** calculates dynamic threat scores $R \in [0, 100]$
 ### 3. Statistical Benchmark Matrix: Mean, Median, Mode & SOTA Comparison
 
 Evaluated across an empirical red-team evaluation corpus ($N = 2,500$ runs) against all contemporary architectures:
+
+```mermaid
+quadrantChart
+    title "Empirical Benchmark Matrix: Defense Efficacy vs Latency & Overhead (N=2,500)"
+    x-axis "Low Threat Defense (0%)" --> "Empirical Zero-Trust Defense (100%)"
+    y-axis "High Latency & Overhead (>200ms)" --> "Sub-2ms Latency & High Precision (0.4% FPR)"
+    quadrant-1 "Frontier: Zero-Trust Runtime (Optimal)"
+    quadrant-2 "Low Security / Low Latency"
+    quadrant-3 "Critical Failure / Perimeter Breach"
+    quadrant-4 "High-Latency Sandboxes"
+    "Raw LLM Baseline (Mean: 38.2% | Latency: 0.0ms)": [0.38, 0.90]
+    "OAuth 2.0 Gateway (Mean: 52.1% | Latency: 18.4ms)": [0.52, 0.70]
+    "Industry Median (Mean: 58.4% | Latency: 125ms)": [0.58, 0.40]
+    "Prompt Guardrails (Mean: 67.8% | Latency: 215ms)": [0.68, 0.20]
+    "SOTA Sandboxes (Mean: 84.6% | Latency: 142ms)": [0.85, 0.35]
+    "MCP Sentinel (Mean: 99.4% | Median/Mode: 100% | 1.8ms)": [0.99, 0.96]
+```
+
+```mermaid
+xychart-beta
+    title "Statistical Distribution: Mean vs Mode Defense % Across Frameworks"
+    x-axis ["Raw LLM Baseline", "OAuth 2.0 Gateway", "Industry Median", "Prompt Guardrails", "SOTA Sandboxes", "MCP Sentinel"]
+    y-axis "Defense Success Rate (%)" 0 --> 100
+    bar [38.2, 52.1, 58.4, 67.8, 84.6, 99.4]
+    line [30.0, 50.0, 50.0, 65.0, 85.0, 100.0]
+```
 
 | Security Architecture / Baseline | Defense Paradigm | Mean Defense % | Median Defense % | Mode Defense % | P95 Authz Latency | False Positive Rate | Zero Standing Privilege |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |

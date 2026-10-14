@@ -117,9 +117,31 @@ flowchart TD
 
 ## 2.2 Probability Distribution & Statistical Benchmark Matrix
 
-<p align="center">
-  <img src="docs/assets/probability_distribution_chart.svg" width="100%" alt="Gaussian Probability Density Distribution & Decision Boundaries" />
-</p>
+```mermaid
+xychart-beta
+    title "Gaussian Risk Probability Density f(x) Across Spectrum [0 to 100]"
+    x-axis ["0", "10 (μ1 Benign)", "20", "30 (T1 Ceiling)", "40", "50", "55 (μ2 Step-Up)", "60", "70", "80 (T2 Deny)", "90", "92 (μ3 Exploit)", "100"]
+    y-axis "Probability Density f(x)" 0 --> 0.09
+    bar [0.017, 0.067, 0.017, 0.001, 0.009, 0.038, 0.044, 0.038, 0.009, 0.004, 0.075, 0.080, 0.022]
+    line [0.017, 0.067, 0.017, 0.001, 0.009, 0.038, 0.044, 0.038, 0.009, 0.004, 0.075, 0.080, 0.022]
+```
+
+```mermaid
+quadrantChart
+    title "Empirical Benchmark Matrix: Defense Efficacy vs Latency & Overhead (N=2,500)"
+    x-axis "Low Threat Defense (0%)" --> "Empirical Zero-Trust Defense (100%)"
+    y-axis "High Latency & Overhead (>200ms)" --> "Sub-2ms Latency & High Precision (0.4% FPR)"
+    quadrant-1 "Frontier: Zero-Trust Runtime (Optimal)"
+    quadrant-2 "Low Security / Low Latency"
+    quadrant-3 "Critical Failure / Perimeter Breach"
+    quadrant-4 "High-Latency Sandboxes"
+    "Raw LLM Baseline (Mean: 38.2% | Latency: 0.0ms)": [0.38, 0.90]
+    "OAuth 2.0 Gateway (Mean: 52.1% | Latency: 18.4ms)": [0.52, 0.70]
+    "Industry Median (Mean: 58.4% | Latency: 125ms)": [0.58, 0.40]
+    "Prompt Guardrails (Mean: 67.8% | Latency: 215ms)": [0.68, 0.20]
+    "SOTA Sandboxes (Mean: 84.6% | Latency: 142ms)": [0.85, 0.35]
+    "MCP Sentinel (Mean: 99.4% | Median/Mode: 100% | 1.8ms)": [0.99, 0.96]
+```
 
 ### Statistical Metrics: Mean, Median, Mode vs Industry and SOTA
 
