@@ -461,6 +461,60 @@ export const api = {
 
   // AI Finance Bot APIs
   sendFinanceChat: async (message, accountId = 'ACC-1001', sessionId = 'sess-fin') => {
+    try {
+      const response = await fetch('/api/agent/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: message, account_id: accountId, session_id: sessionId })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const sec = data.security_verdict || {};
+        const isAllow = sec.verdict === 'ALLOW';
+        const isStepUp = sec.verdict === 'STEP_UP_REQUIRED';
+
+        let pendingRefund = null;
+        if (isStepUp && (data.proposed_tool === 'issue_refund' || data.proposed_tool === 'process_refund')) {
+          pendingRefund = {
+            id: sec.request_id || `appr-${Date.now()}`,
+            confirmationId: `REF-${Date.now().toString(36).toUpperCase()}`,
+            transactionId: 'TXN-2003',
+            accountId: accountId,
+            amount: data.proposed_args?.amount || 120.00,
+            currency: 'USD',
+            reason: data.proposed_args?.reason || 'Customer dispute exceeding autonomous ceiling',
+            status: 'pending',
+            createdAt: new Date().toISOString()
+          };
+          mockStore.approvals.unshift(pendingRefund);
+        }
+
+        return {
+          reply: data.assistant_reply || (isAllow ? 'Action authorized by Sentinel.' : 'Action intercepted by Sentinel.'),
+          model: data.model,
+          toolActivities: [
+            {
+              toolName: data.proposed_tool,
+              args: data.proposed_args,
+              output: isAllow
+                ? JSON.stringify(sec.result || 'Execution verified on ledger')
+                : (isStepUp ? 'PAUSED: Awaiting human supervisor approval' : 'FORBIDDEN: Cedar Policy violation'),
+              isError: !isAllow && !isStepUp,
+              securityDecision: {
+                decision: sec.verdict,
+                reason: sec.reason,
+                policyId: sec.cedar_decision,
+                riskScore: sec.risk_score
+              }
+            }
+          ],
+          pendingRefund: pendingRefund
+        };
+      }
+    } catch (e) {
+      // Fallback to local deterministic mock
+    }
+
     const lower = message.toLowerCase();
 
     // Check for Attack: Prompt Injection

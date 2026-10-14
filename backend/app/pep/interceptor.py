@@ -23,6 +23,11 @@ class PolicyEnforcementPoint:
                 float(args.get("amount", 0.0)),
                 args.get("reason", "")
             ),
+            "issue_refund": lambda args: banking_service.process_refund(
+                args.get("account_id"),
+                float(args.get("amount", 0.0)),
+                args.get("reason", "")
+            ),
             "get_customer_profile": lambda args: customer_service.get_customer_profile(args.get("customer_id")),
             "export_customer_data": lambda args: customer_service.export_customer_data(args.get("scope", "ALL")),
             "drop_database_table": lambda args: admin_service.drop_database_table(args.get("table_name"))

@@ -11,7 +11,7 @@ export default function FinanceBot() {
     {
       id: 'welcome',
       role: 'model',
-      text: "Hello! I am the **MCP Sentinel AI Finance Assistant**, powered by Google Gemini and protected by AWS Cedar continuous authorization.\n\nI can retrieve account balances, list transactions, investigate suspicious memos for prompt injections, and prepare refunds with mandatory human approval gates.\n\nHow can I help you today?",
+      text: "Hello! I am the **MCP Sentinel AI Finance Assistant**, powered by **Meta Llama 3.3 70B** (Cloud Inference Engine) and protected by AWS Cedar continuous authorization.\n\nI can retrieve account balances, list transactions, investigate suspicious memos for prompt injections, and prepare refunds with mandatory human approval gates.\n\nHow can I help you today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);

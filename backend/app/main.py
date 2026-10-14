@@ -102,6 +102,8 @@ async def run_scenario_endpoint(req: RunScenarioRequest):
     })
     return result
 
+from backend.app.agents.llama_agent import llama_agent
+
 @app.post("/api/agent/execute")
 async def execute_custom_action_endpoint(req: CustomActionRequest):
     result = agent_runner.execute_custom_agent_action(
@@ -114,6 +116,37 @@ async def execute_custom_action_endpoint(req: CustomActionRequest):
     await manager.broadcast({
         "type": "CUSTOM_ACTION_INTERCEPTED",
         "data": result
+    })
+    return result
+
+class LlamaChatRequest(BaseModel):
+    prompt: str
+    account_id: str = "ACC-1001"
+    agent_role: str = "BankingAssistant"
+    session_id: Optional[str] = None
+
+@app.post("/api/agent/chat")
+async def llama_agent_chat_endpoint(req: LlamaChatRequest):
+    """
+    Direct interface to Meta Llama-3.3-70B-Versatile AI Agent.
+    Reasons over prompt, formulates tool call, and runs through MCP Sentinel PEP Interceptor.
+    """
+    result = llama_agent.process_prompt(
+        prompt=req.prompt,
+        agent_role=req.agent_role,
+        account_id=req.account_id,
+        session_id=req.session_id
+    )
+    await manager.broadcast({
+        "type": "CUSTOM_ACTION_INTERCEPTED",
+        "data": {
+            "agent_id": f"agent-llama70b-{req.session_id or 'eval'}",
+            "role": req.agent_role,
+            "tool_name": result["proposed_tool"],
+            "arguments": result["proposed_args"],
+            "prompt": req.prompt,
+            "verdict_result": result["security_verdict"]
+        }
     })
     return result
 

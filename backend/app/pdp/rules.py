@@ -33,11 +33,19 @@ class PolicyMatrix:
             ),
             "process_refund": ToolPolicyRule(
                 tool_name="process_refund",
-                allowed_roles=["BankingAssistant", "SupervisorAgent"],
+                allowed_roles=["BankingAssistant", "SupervisorAgent", "FinancialRemediationAgent"],
                 base_risk=20,
                 requires_step_up_above_val=150.0,
                 is_destructive=False,
                 description="Credit funds back to customer account"
+            ),
+            "issue_refund": ToolPolicyRule(
+                tool_name="issue_refund",
+                allowed_roles=["BankingAssistant", "SupervisorAgent", "FinancialRemediationAgent"],
+                base_risk=20,
+                requires_step_up_above_val=50.0,
+                is_destructive=False,
+                description="Issue customer dispute or remediation refund"
             ),
             "transfer_funds": ToolPolicyRule(
                 tool_name="transfer_funds",
