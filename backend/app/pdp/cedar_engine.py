@@ -57,6 +57,20 @@ forbid (
     action in [Action::"drop_database_table"],
     resource
 );
+
+// Policy 7: Financial Remediation Agent permitted for refunds
+permit (
+    principal == AgentRole::"FinancialRemediationAgent",
+    action in [Action::"issue_refund", Action::"process_refund"],
+    resource
+);
+
+// Policy 8: Banking Assistant permitted for refunds
+permit (
+    principal == AgentRole::"BankingAssistant",
+    action in [Action::"issue_refund", Action::"process_refund"],
+    resource
+);
 """
 
 class CedarPolicyEngine:

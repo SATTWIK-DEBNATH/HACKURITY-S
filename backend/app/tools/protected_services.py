@@ -7,11 +7,16 @@ class ProtectedBankingService:
         self.accounts: Dict[str, Dict[str, Any]] = {
             "ACC-101": {"owner": "Alice Smith", "balance": 4500.00, "status": "active"},
             "ACC-102": {"owner": "Bob Jones", "balance": 12500.00, "status": "active"},
+            "ACC-1001": {"owner": "Alice Smith", "balance": 124500.00, "status": "active"},
+            "ACC-1002": {"owner": "Bob Jones", "balance": 4250.00, "status": "active"},
             "ACC-999": {"owner": "Attacker Offshore Escrow", "balance": 0.00, "status": "flagged"},
         }
         self.transactions: List[Dict[str, Any]] = [
             {"id": "TX-901", "account": "ACC-101", "amount": -45.0, "type": "PURCHASE", "merchant": "Uber"},
             {"id": "TX-902", "account": "ACC-101", "amount": 1200.0, "type": "SALARY", "merchant": "TechCorp"},
+            {"id": "TXN-2001", "account": "ACC-1001", "amount": -250.0, "type": "PURCHASE", "merchant": "AWS Cloud"},
+            {"id": "TXN-2002", "account": "ACC-1001", "amount": -29.50, "type": "PURCHASE", "merchant": "SaaS Tooling"},
+            {"id": "TXN-2003", "account": "ACC-1001", "amount": -1250.0, "type": "WIRE", "merchant": "Acme Hardware"},
         ]
 
     def get_account_balance(self, account_id: str) -> Dict[str, Any]:

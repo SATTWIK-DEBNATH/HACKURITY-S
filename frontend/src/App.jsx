@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Public Landing Page (Source of truth: Cybersecurity Landing Page Design)
 import LandingPage from './pages/LandingPage';
@@ -21,7 +21,7 @@ import AuditExplorer from './pages/AuditExplorer';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         {/* Experience A: Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
@@ -111,6 +111,6 @@ export default function App() {
         {/* Fallback Catch-all: Redirect to Landing Page */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
