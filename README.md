@@ -29,63 +29,57 @@ When an agent encounters **Indirect Prompt Injection**—such as adversarial ins
 
 MCP Sentinel physically decouples the **Control Plane** from the **Data Plane**, ensuring that no autonomous workload retains standing execution authority.
 
-```
-                    +-----------------------------------------------------------+
-                    |                 UNTRUSTED ENVIRONMENT                     |
-                    |                                                           |
-                    |    [ Human Customer / External Attacker Data ]           |
-                    |                         |                                 |
-                    |                         v                                 |
-                    |           [ Autonomous LLM Agent Core ]                   |
-                    |       (Subject to Prompt Drift / Hijacking)              |
-                    +-----------------------------+-----------------------------+
-                                                  |
-                          Tool Call Request       | (Intercepted before dispatch)
-                          (Arguments + Context)   v
-  +-----------------------------------------------+-----------------------------------------------+
-  |                             MCP SENTINEL SECURITY SANDBOX                                     |
-  |                                                                                               |
-  |  +-----------------------------------------------------------------------------------------+  |
-  |  | [1. Non-Bypassable Policy Enforcement Point (PEP) Interceptor]                          |  |
-  |  |    - Traps raw JSON-RPC MCP tool dispatch                                               |  |
-  |  |    - Validates Ephemeral Agent-WID JWT Claims (Ed25519)                                 |  |
-  |  +--------------------------------------------+--------------------------------------------+  |
-  |                                               | Attestation & Context                         |
-  |                                               v                                               |
-  |  +-----------------------------------------------------------------------------------------+  |
-  |  | [2. Policy Decision Point (PDP) Engine]                                                 |  |
-  |  |    +--------------------------+  +--------------------------+  +---------------------+  |  |
-  |  |    | Formal AWS Cedar Engine  |  | Dynamic Blast Scorer     |  | Injection Sanitizer |  |  |
-  |  |    | (Automated Reasoning AST)|  | (Velocity & Cumulative)  |  | (Adversarial Heur.) |  |  |
-  |  |    +--------------------------+  +--------------------------+  +---------------------+  |  |
-  |  +--------------------------------------------+--------------------------------------------+  |
-  |                                               |                                               |
-  |                     +-------------------------+-------------------------+                     |
-  |                     |                                                   |                     |
-  |             ALLOW Verdict                                       DENY / STEP-UP                |
-  |                     v                                                   v                     |
-  |  +-------------------------------------+             +-------------------------------------+  |
-  |  | [3. Single-Use Nonce Execution Ticket] |             | [4. Dual-Custody HITL / SOC Block]  |  |
-  |  |    - HMAC-SHA256 Signed Nonce       |             |    - Human-In-The-Loop Approval Gate|  |
-  |  |    - Bound to Exact Tool & Arguments|             |    - Immediate Attacker Interception|  |
-  |  +------------------+------------------+             +------------------+------------------+  |
-  |                     |                                                   |                     |
-  |                     v                                                   v                     |
-  |  +-----------------------------------------------------------------------------------------+  |
-  |  | [5. Cryptographic SHA-256 Merkle Hash Chain Audit Ledger]                               |  |
-  |  |    - Nonce, Verdict, Principal, Factor Breakdown, PrevHash Chain Integrity             |  |
-  |  +-----------------------------------------------------------------------------------------+  |
-  |  | [6. Autonomous Circuit Breaker]                                                         |  |
-  |  |    - Tracks rapid violation frequency; trips into QUARANTINE to revoke all tokens       |  |
-  |  +-----------------------------------------------------------------------------------------+  |
-  +-----------------------------------------------+-----------------------------------------------+
-                                                  |
-                                                  v
-                    +-----------------------------------------------------------+
-                    |                      PROTECTED DATA PLANE                 |
-                    |                                                           |
-                    |  [ Core Banking DB ]  [ Wire Transfer ]  [ PII Records ]  |
-                    +-----------------------------------------------------------+
+```mermaid
+flowchart TD
+    %% Styling Classes for NIST SP 800-207 Architecture
+    classDef untrusted fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#fff;
+    classDef pep fill:#0f172a,stroke:#0284c7,stroke-width:2px,color:#fff;
+    classDef pdp fill:#0c4a6e,stroke:#38bdf8,stroke-width:2px,color:#fff;
+    classDef allow fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef deny fill:#4c0519,stroke:#ef4444,stroke-width:2px,color:#fff;
+    classDef audit fill:#1e293b,stroke:#a855f7,stroke-width:2px,color:#fff;
+    classDef protected fill:#064e3b,stroke:#059669,stroke-width:2px,color:#fff;
+
+    subgraph UntrustedEnv ["UNTRUSTED ENVIRONMENT"]
+        direction TB
+        ExtData["Human Customer / External Attacker Data"]:::untrusted
+        AgentCore["Autonomous LLM Agent Core<br/><i>(Subject to Prompt Drift / Hijacking)</i>"]:::untrusted
+        ExtData --> AgentCore
+    end
+
+    AgentCore -->|"Tool Call Request (Arguments + Context)<br/><i>(Intercepted before dispatch)</i>"| PEP
+
+    subgraph Sandbox ["MCP SENTINEL SECURITY SANDBOX (NIST SP 800-207 CONTROL PLANE)"]
+        direction TB
+
+        PEP["<b>1. Non-Bypassable Policy Enforcement Point (PEP) Interceptor</b><br/>• Traps raw JSON-RPC MCP tool dispatch<br/>• Validates Ephemeral Agent-WID JWT Claims (Ed25519)"]:::pep
+
+        PEP -->|"Attestation & Context"| PDPBox
+
+        subgraph PDPBox ["2. Policy Decision Point (PDP) Engine"]
+            direction LR
+            Cedar["<b>Formal AWS Cedar Engine</b><br/>(Automated Reasoning AST)"]:::pdp
+            Scorer["<b>Dynamic Blast Scorer</b><br/>(Velocity & Cumulative)"]:::pdp
+            Sanitizer["<b>Injection Sanitizer</b><br/>(Adversarial Heuristics)"]:::pdp
+        end
+
+        PDPBox -->|"ALLOW Verdict"| NonceTicket["<b>3. Single-Use Nonce Execution Ticket</b><br/>• HMAC-SHA256 Signed Nonce<br/>• Bound to Exact Tool & Arguments"]:::allow
+        PDPBox -->|"DENY / STEP-UP"| HITLBlock["<b>4. Dual-Custody HITL / SOC Block</b><br/>• Human-In-The-Loop Approval Gate<br/>• Immediate Attacker Interception"]:::deny
+
+        NonceTicket --> Ledger["<b>5. Cryptographic SHA-256 Merkle Hash Chain Audit Ledger</b><br/>• Nonce, Verdict, Principal, Factor Breakdown, PrevHash Chain Integrity"]:::audit
+        HITLBlock --> Ledger
+
+        Ledger --> CircuitBreaker["<b>6. Autonomous Circuit Breaker</b><br/>• Tracks rapid violation frequency; trips into QUARANTINE to revoke all tokens"]:::audit
+    end
+
+    subgraph ProtectedPlane ["PROTECTED DATA PLANE"]
+        direction LR
+        BankDB[("Core Banking DB")]:::protected
+        WireTx[("Wire Transfer Gateway")]:::protected
+        PIIRec[("Customer PII Records")]:::protected
+    end
+
+    NonceTicket ==>|"Cryptographically Signed Nonce Ticket Only"| ProtectedPlane
 ```
 
 ---
