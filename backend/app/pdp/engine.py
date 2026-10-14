@@ -122,12 +122,18 @@ class PolicyDecisionPoint:
             factors.append(f"AWS Cedar Engine: {cedar_decision} (Formally Verified Forbid)")
 
         # 3. Decision Logic
-        if risk_score > settings.RISK_STEP_UP_THRESHOLD or (not cedar_allowed and risk_score > 50):
+        is_high_value_step_up = (
+            tool_name in ["transfer_funds", "issue_refund", "process_refund"]
+            and float(arguments.get("amount", 0.0)) > settings.HIGH_VALUE_THRESHOLD_USD
+            and risk_score <= settings.RISK_STEP_UP_THRESHOLD
+        )
+
+        if risk_score > settings.RISK_STEP_UP_THRESHOLD:
             verdict = AuthorizationVerdict.DENY
             reason = f"High Risk Score ({risk_score}/100) triggered Zero-Trust Block"
             ticket = None
             req_id = None
-        elif risk_score > settings.RISK_ALLOW_THRESHOLD:
+        elif is_high_value_step_up or risk_score > settings.RISK_ALLOW_THRESHOLD:
             verdict = AuthorizationVerdict.STEP_UP_REQUIRED
             reason = f"Moderate/Elevated Risk Score ({risk_score}/100) requires Human-In-The-Loop Step-Up"
             req_id = f"REQ-{uuid.uuid4().hex[:8].upper()}"
@@ -145,6 +151,11 @@ class PolicyDecisionPoint:
             )
             self.pending_approvals[req_id] = pending
             ticket = None
+        elif not cedar_allowed:
+            verdict = AuthorizationVerdict.DENY
+            reason = f"AWS Cedar Policy PDP Denied: {cedar_decision}"
+            ticket = None
+            req_id = None
         else:
             verdict = AuthorizationVerdict.ALLOW
             reason = f"Risk Score ({risk_score}/100) within trusted baseline"
