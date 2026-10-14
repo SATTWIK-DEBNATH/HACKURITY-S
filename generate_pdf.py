@@ -320,3 +320,10 @@ def generate_pdf(output_path: str):
 if __name__ == "__main__":
     out_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "SentinAgent_Continuous_Authorization_Report.pdf"))
     generate_pdf(out_file)
+    try:
+        import convert_readme_to_pdf
+        full_spec_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "MCP_Sentinel_Complete_Specification.pdf"))
+        convert_readme_to_pdf.build_pdf(full_spec_file)
+    except Exception as e:
+        print(f"[!] Warning: failed to build full spec PDF: {e}")
+
