@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../services/api';
 import { FlaskConical, Play, RotateCcw, ShieldCheck, ShieldX, AlertTriangle, Bug, KeyRound, Ban, UserCheck, Zap, Check, X, ShieldAlert, Terminal, Layers, Workflow, Grid } from 'lucide-react';
 import AttackFlowPipeline from '../components/AttackFlowPipeline';
+import ThreatProbabilityBenchmark from '../components/ThreatProbabilityBenchmark';
 
 const scenarios = [
   {
@@ -156,6 +157,16 @@ export default function AttackLab() {
             >
               <Grid className="w-3.5 h-3.5" /> Scenario Matrix
             </button>
+            <button
+              onClick={() => setViewMode('benchmarks')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                viewMode === 'benchmarks'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5" /> Probability & Benchmarks
+            </button>
           </div>
 
           <button
@@ -174,9 +185,11 @@ export default function AttackLab() {
         </div>
       )}
 
-      {/* Conditionally Render Attack Flow Architecture vs Scenario Matrix */}
+      {/* Conditionally Render Attack Flow Architecture vs Benchmarks vs Scenario Matrix */}
       {viewMode === 'pipeline' ? (
         <AttackFlowPipeline />
+      ) : viewMode === 'benchmarks' ? (
+        <ThreatProbabilityBenchmark />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {scenarios.map(({ id, label, icon: Icon, desc, badge, color }) => {

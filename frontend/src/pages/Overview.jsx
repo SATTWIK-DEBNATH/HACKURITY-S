@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { ShieldCheck, ShieldX, Clock, Users, AlertTriangle, Gauge, Lock, Key, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ShieldX, Clock, Users, AlertTriangle, Gauge, Lock, Key, ArrowRight, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ThreatProbabilityBenchmark from '../components/ThreatProbabilityBenchmark';
 
 export default function Overview() {
   const navigate = useNavigate();
@@ -49,10 +50,10 @@ export default function Overview() {
             NIST SP 800-207 Zero-Trust Runtime
           </span>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', margin: '4px 0 0' }}>
-            Security Overview
+            Security Overview & Statistical Benchmarks
           </h2>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '2px 0 0' }}>
-            Continuous authorization telemetry, Cedar decision metrics, and cryptographic integrity proof
+            Continuous authorization telemetry, Cedar decision metrics, and empirical probability distribution
           </p>
         </div>
 
@@ -158,6 +159,9 @@ export default function Overview() {
           <div style={{ width: `${allowedPct}%`, height: '100%', background: 'linear-gradient(90deg, #6de7ae, #65e7f5)', borderRadius: '4px' }} />
         </div>
       </div>
+
+      {/* Scientific Benchmarks, Probability Density & Comparative Metrics Component */}
+      <ThreatProbabilityBenchmark />
     </div>
   );
 }
