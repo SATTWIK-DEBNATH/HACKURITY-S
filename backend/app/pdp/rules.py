@@ -19,7 +19,7 @@ class PolicyMatrix:
                 tool_name="get_account_balance",
                 allowed_roles=["TriageAgent", "BankingAssistant", "SupervisorAgent"],
                 base_risk=5,
-                requires_step_up_above_val=float("inf"),
+                requires_step_up_above_val=999999999.0,
                 is_destructive=False,
                 description="Read-only account balance check"
             ),
@@ -27,7 +27,7 @@ class PolicyMatrix:
                 tool_name="get_transaction_history",
                 allowed_roles=["BankingAssistant", "SupervisorAgent"],
                 base_risk=10,
-                requires_step_up_above_val=float("inf"),
+                requires_step_up_above_val=999999999.0,
                 is_destructive=False,
                 description="Read-only past transaction records"
             ),
@@ -51,7 +51,7 @@ class PolicyMatrix:
                 tool_name="get_customer_profile",
                 allowed_roles=["TriageAgent", "BankingAssistant"],
                 base_risk=15,
-                requires_step_up_above_val=float("inf"),
+                requires_step_up_above_val=999999999.0,
                 is_destructive=False,
                 description="Fetch masked customer contact profile"
             ),

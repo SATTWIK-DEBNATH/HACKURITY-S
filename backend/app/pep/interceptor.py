@@ -53,6 +53,7 @@ class PolicyEnforcementPoint:
             return {
                 "status": "BLOCKED",
                 "verdict": verdict,
+                "cedar_decision": eval_result.get("cedar_decision", "Decision.Deny"),
                 "reason": eval_result["reason"],
                 "risk_score": eval_result["risk_score"],
                 "risk_factors": eval_result["risk_factors"],
@@ -65,6 +66,7 @@ class PolicyEnforcementPoint:
             return {
                 "status": "STEP_UP_REQUIRED",
                 "verdict": verdict,
+                "cedar_decision": eval_result.get("cedar_decision", "Decision.Allow"),
                 "request_id": eval_result["request_id"],
                 "reason": eval_result["reason"],
                 "risk_score": eval_result["risk_score"],
@@ -105,6 +107,7 @@ class PolicyEnforcementPoint:
             return {
                 "status": "EXECUTED",
                 "verdict": verdict,
+                "cedar_decision": eval_result.get("cedar_decision", "Decision.Allow"),
                 "reason": eval_result["reason"],
                 "risk_score": eval_result["risk_score"],
                 "risk_factors": eval_result["risk_factors"],

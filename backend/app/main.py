@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from backend.app.config import settings
 from backend.app.pdp.engine import pdp_engine
 from backend.app.pdp.rules import policy_matrix
+from backend.app.pdp.cedar_engine import cedar_engine, DEFAULT_CEDAR_POLICIES
 from backend.app.pep.interceptor import pep_interceptor
 from backend.app.audit.ledger import audit_ledger
 from backend.app.agents.attack_scenarios import SCENARIOS
@@ -173,6 +174,21 @@ async def update_policy(req: PolicyUpdateRequest):
         "rule": policy_matrix.get_rule(req.tool_name).model_dump()
     })
     return {"status": "SUCCESS", "rule": policy_matrix.get_rule(req.tool_name).model_dump()}
+
+@app.get("/api/cedar/policies")
+def get_cedar_policies():
+    return {
+        "engine": "AWS Cedar v4.12",
+        "policies": cedar_engine.policies_str
+    }
+
+class CedarUpdateRequest(BaseModel):
+    policies: str
+
+@app.post("/api/cedar/update")
+def update_cedar_policies(req: CedarUpdateRequest):
+    cedar_engine.policies_str = req.policies
+    return {"status": "SUCCESS", "message": "AWS Cedar policies updated"}
 
 @app.get("/api/stats")
 def get_stats():

@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-core: #050811;
-  --bg-surface: rgba(11, 19, 36, 0.75);
-  --bg-card: rgba(15, 26, 50, 0.6);
-  --bg-card-hover: rgba(22, 36, 68, 0.8);
+  --bg-core: #040711;
+  --bg-surface: rgba(10, 17, 34, 0.78);
+  --bg-card: rgba(14, 24, 48, 0.65);
+  --bg-card-hover: rgba(20, 34, 66, 0.85);
   
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(0, 242, 254, 0.3);
-  --border-glow: 0 0 15px rgba(0, 242, 254, 0.2);
+  --border-highlight: rgba(0, 242, 254, 0.35);
+  --border-glow: 0 0 20px rgba(0, 242, 254, 0.25);
 
   --accent-cyan: #00f2fe;
   --accent-blue: #38bdf8;
@@ -21,6 +21,7 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
+  --font-heading: 'Outfit', sans-serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
@@ -38,25 +39,29 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.07) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
-    linear-gradient(to bottom, rgba(5, 8, 17, 0.95), rgba(5, 8, 17, 1));
+    radial-gradient(circle at 12% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 88% 88%, rgba(168, 85, 247, 0.07) 0%, transparent 45%),
+    linear-gradient(to bottom, #040711 0%, #070b16 100%);
   background-attachment: fixed;
 }
 
-/* Glassmorphism Cards */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+}
+
+/* Glassmorphism Panels */
 .glass-panel {
   background: var(--bg-surface);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.6);
 }
 
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   transition: all 0.25s ease;
@@ -65,7 +70,7 @@ body {
 .glass-card:hover {
   background: var(--bg-card-hover);
   border-color: rgba(0, 242, 254, 0.35);
-  box-shadow: 0 0 18px rgba(0, 242, 254, 0.15);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.18);
 }
 
 /* Cyber Badges */
@@ -75,8 +80,8 @@ body {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   font-family: var(--font-mono);
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -139,20 +144,25 @@ body {
   100% { transform: scale(2.2); opacity: 0; }
 }
 
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(5, 8, 17, 0.6);
+  background: rgba(4, 7, 17, 0.7);
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 242, 254, 0.4);
+  background: rgba(0, 242, 254, 0.45);
 }
 
 /* Buttons */
@@ -163,7 +173,7 @@ body {
   gap: 8px;
   padding: 8px 16px;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -172,31 +182,34 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 100%);
   color: #030712;
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.35);
+  font-weight: 700;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 25px rgba(0, 242, 254, 0.5);
+  box-shadow: 0 0 28px rgba(0, 242, 254, 0.55);
 }
 
 .btn-danger {
   background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
   color: white;
-  box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.35);
+  font-weight: 700;
 }
 
 .btn-danger:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 25px rgba(244, 63, 94, 0.5);
+  box-shadow: 0 0 28px rgba(244, 63, 94, 0.55);
 }
 
 .btn-warning {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #030712;
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.35);
+  font-weight: 700;
 }
 
 .btn-ghost {
@@ -206,11 +219,10 @@ body {
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Monospace Code font for payloads and hashes */
 .font-mono {
   font-family: var(--font-mono);
 }

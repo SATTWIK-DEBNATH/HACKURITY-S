@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Navbar from './components/Navbar';
-import StatsBar from './components/StatsBar';
-import InteractiveTopology from './components/InteractiveTopology';
-import ThreatActivityChart from './components/ThreatActivityChart';
-import AttackLauncher from './components/AttackLauncher';
-import InterceptionStream from './components/InterceptionStream';
+import LiquidNavbar from './components/LiquidNavbar';
+import LiquidConsole from './components/LiquidConsole';
 import StepUpApprovalModal from './components/StepUpApprovalModal';
-import AuditLedgerViewer from './components/AuditLedgerViewer';
-import PolicyRulesEditor from './components/PolicyRulesEditor';
 import CyberBackground from './components/CyberBackground';
 import { cyberAudio } from './utils/cyberAudio';
 
@@ -27,24 +21,22 @@ export default function App() {
   const [auditBlocks, setAuditBlocks] = useState([]);
   const [pendingApprovals, setPendingApprovals] = useState([]);
   const [policies, setPolicies] = useState({});
+  const [cedarPolicies, setCedarPolicies] = useState('');
   const [verificationResult, setVerificationResult] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
-
-  // Tabs for Left and Right Panels
-  const [leftTab, setLeftTab] = useState('launcher'); // 'launcher' | 'policies'
-  const [rightTab, setRightTab] = useState('stream');   // 'stream' | 'ledger'
 
   const wsRef = useRef(null);
 
   // Initial Data Fetch
   const fetchAllData = async () => {
     try {
-      const [scRes, stRes, ledgerRes, stepRes, polRes] = await Promise.all([
+      const [scRes, stRes, ledgerRes, stepRes, polRes, cedarRes] = await Promise.all([
         fetch('/api/scenarios').then(r => r.json()).catch(() => []),
         fetch('/api/stats').then(r => r.json()).catch(() => ({})),
         fetch('/api/audit/ledger').then(r => r.json()).catch(() => []),
         fetch('/api/step-up/pending').then(r => r.json()).catch(() => []),
-        fetch('/api/policies').then(r => r.json()).catch(() => ({}))
+        fetch('/api/policies').then(r => r.json()).catch(() => ({})),
+        fetch('/api/cedar/policies').then(r => r.json()).catch(() => ({}))
       ]);
 
       if (Array.isArray(scRes)) setScenarios(scRes);
@@ -52,6 +44,7 @@ export default function App() {
       if (Array.isArray(ledgerRes)) setAuditBlocks(ledgerRes);
       if (Array.isArray(stepRes)) setPendingApprovals(stepRes);
       if (polRes && typeof polRes === 'object') setPolicies(polRes);
+      if (cedarRes && cedarRes.policies) setCedarPolicies(cedarRes.policies);
     } catch (err) {
       console.error("Error fetching initial state:", err);
     }
@@ -262,6 +255,21 @@ export default function App() {
     }
   };
 
+  const handleUpdateCedar = async (newPoliciesStr) => {
+    cyberAudio.playClick();
+    try {
+      await fetch('/api/cedar/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ policies: newPoliciesStr })
+      });
+      setCedarPolicies(newPoliciesStr);
+      alert('AWS Cedar policies formally recompiled and live in PDP engine!');
+    } catch (err) {
+      console.error("Cedar policy update failed:", err);
+    }
+  };
+
   const handleExportAudit = () => {
     cyberAudio.playClick();
     const exportData = {
@@ -283,154 +291,35 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Interactive Cyber Particle Constellation Canvas */}
+      {/* Background Cyber Constellation Canvas */}
       <CyberBackground />
 
-      {/* Top Navbar with Audio FX & Confetti */}
-      <Navbar
+      {/* Streamlined Liquid Navbar with Metrics Ticker */}
+      <LiquidNavbar
         isConnected={isConnected}
-        onVerifyLedger={handleVerifyLedger}
         stats={stats}
+        onVerifyLedger={handleVerifyLedger}
         onExportAudit={handleExportAudit}
       />
 
-      {/* Main KPI Stats Bar */}
-      <StatsBar stats={stats} />
-
-      {/* Dynamic Animated Zero-Trust Packet Inspection Topology */}
-      <InteractiveTopology latestEvent={latestEvent} />
-
-      {/* Live Contextual Risk & Velocity Telemetry Chart */}
-      <ThreatActivityChart events={events} />
-
-      {/* Main Workspace Split Grid */}
-      <main style={{
-        flex: 1,
-        margin: '0 24px 24px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '20px',
-        minHeight: '520px',
-        position: 'relative',
-        zIndex: 1
-      }}>
-        {/* Left Column: Attack Launcher OR Policy Editor */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ display: 'flex', gap: '8px', padding: '0 4px' }}>
-            <button
-              onClick={() => {
-                cyberAudio.playClick();
-                setLeftTab('launcher');
-              }}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                background: leftTab === 'launcher' ? 'rgba(0, 242, 254, 0.2)' : 'rgba(255,255,255,0.04)',
-                color: leftTab === 'launcher' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                border: `1px solid ${leftTab === 'launcher' ? 'rgba(0, 242, 254, 0.4)' : 'var(--border-subtle)'}`,
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              ⚡ Threat Launcher & Scenarios
-            </button>
-
-            <button
-              onClick={() => {
-                cyberAudio.playClick();
-                setLeftTab('policies');
-              }}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                background: leftTab === 'policies' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255,255,255,0.04)',
-                color: leftTab === 'policies' ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                border: `1px solid ${leftTab === 'policies' ? 'rgba(56, 189, 248, 0.4)' : 'var(--border-subtle)'}`,
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              ⚙️ ABAC Policy Rules Matrix
-            </button>
-          </div>
-
-          <div style={{ flex: 1, minHeight: 0 }}>
-            {leftTab === 'launcher' ? (
-              <AttackLauncher
-                scenarios={scenarios}
-                onRunScenario={handleRunScenario}
-                onRunCustomAction={handleRunCustomAction}
-                isRunning={isRunning}
-              />
-            ) : (
-              <PolicyRulesEditor
-                policies={policies}
-                onUpdatePolicy={handleUpdatePolicy}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Right Column: Interception Stream OR Audit Ledger */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ display: 'flex', gap: '8px', padding: '0 4px' }}>
-            <button
-              onClick={() => {
-                cyberAudio.playClick();
-                setRightTab('stream');
-              }}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                background: rightTab === 'stream' ? 'rgba(0, 242, 254, 0.2)' : 'rgba(255,255,255,0.04)',
-                color: rightTab === 'stream' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                border: `1px solid ${rightTab === 'stream' ? 'rgba(0, 242, 254, 0.4)' : 'var(--border-subtle)'}`,
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              📡 Live PEP Interception Stream
-            </button>
-
-            <button
-              onClick={() => {
-                cyberAudio.playClick();
-                setRightTab('ledger');
-              }}
-              style={{
-                padding: '6px 14px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                background: rightTab === 'ledger' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255,255,255,0.04)',
-                color: rightTab === 'ledger' ? '#c084fc' : 'var(--text-secondary)',
-                border: `1px solid ${rightTab === 'ledger' ? 'rgba(168, 85, 247, 0.4)' : 'var(--border-subtle)'}`,
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              🔗 Tamper-Proof Audit Chain ({auditBlocks.length})
-            </button>
-          </div>
-
-          <div style={{ flex: 1, minHeight: 0 }}>
-            {rightTab === 'stream' ? (
-              <InterceptionStream
-                events={events}
-                onClearStream={() => setEvents([])}
-              />
-            ) : (
-              <AuditLedgerViewer
-                blocks={auditBlocks}
-                onVerify={handleVerifyLedger}
-                verificationResult={verificationResult}
-              />
-            )}
-          </div>
-        </div>
-      </main>
+      {/* Main Unified 3-Column Interactive Command Center */}
+      <LiquidConsole
+        scenarios={scenarios}
+        onRunScenario={handleRunScenario}
+        onRunCustomAction={handleRunCustomAction}
+        latestEvent={latestEvent}
+        events={events}
+        auditBlocks={auditBlocks}
+        pendingApprovals={pendingApprovals}
+        onResolveStepUp={handleResolveStepUp}
+        onVerifyLedger={handleVerifyLedger}
+        verificationResult={verificationResult}
+        isRunning={isRunning}
+        policies={policies}
+        onUpdatePolicy={handleUpdatePolicy}
+        cedarPolicies={cedarPolicies}
+        onUpdateCedar={handleUpdateCedar}
+      />
 
       {/* Human-In-The-Loop Step-Up Modal */}
       <StepUpApprovalModal

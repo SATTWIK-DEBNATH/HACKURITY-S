@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from backend.app.config import settings
 from backend.app.identity.provider import AgentIdentityClaims, idp
 from backend.app.pdp.risk_scorer import risk_scorer
+from backend.app.pdp.cedar_engine import cedar_engine
 from backend.app.audit.ledger import audit_ledger
 
 class AuthorizationVerdict:
@@ -110,8 +111,18 @@ class PolicyDecisionPoint:
             claims, tool_name, arguments, initial_intent
         )
 
+        # 2b. Formally Verified AWS Cedar Policy Evaluation
+        cedar_allowed, cedar_decision = cedar_engine.evaluate_cedar(
+            agent_role=claims.role,
+            tool_name=tool_name,
+            resource_id=str(arguments.get("account_id") or "Core"),
+            context_args=arguments
+        )
+        if not cedar_allowed and "Decision.Deny" in cedar_decision:
+            factors.append(f"AWS Cedar Engine: {cedar_decision} (Formally Verified Forbid)")
+
         # 3. Decision Logic
-        if risk_score > settings.RISK_STEP_UP_THRESHOLD:
+        if risk_score > settings.RISK_STEP_UP_THRESHOLD or (not cedar_allowed and risk_score > 50):
             verdict = AuthorizationVerdict.DENY
             reason = f"High Risk Score ({risk_score}/100) triggered Zero-Trust Block"
             ticket = None
@@ -147,6 +158,7 @@ class PolicyDecisionPoint:
         # 4. Immutable Audit Ledger Entry
         decision_event = {
             "verdict": verdict,
+            "cedar_decision": cedar_decision,
             "agent_id": claims.agent_id,
             "role": claims.role,
             "session_id": claims.session_id,
@@ -162,6 +174,7 @@ class PolicyDecisionPoint:
 
         return {
             "verdict": verdict,
+            "cedar_decision": cedar_decision,
             "reason": reason,
             "risk_score": risk_score,
             "risk_factors": factors,
